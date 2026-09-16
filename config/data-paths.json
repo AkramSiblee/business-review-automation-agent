@@ -1,0 +1,22 @@
+{
+  "_comment": "Edit ONLY the values below, then delete this comment. These are the local, Google-Drive-for-Desktop-synced folder paths on YOUR machine -- not paths inside this project. Claude Code reads this file at the start of every business review cycle to find your real input/output locations. Use forward slashes even on Windows (e.g. C:/Users/you/Google Drive/My Drive/...).",
+
+  "_input_model": "Each cycle, inputs_subfolder should hold exactly ONE file: a multi-tab Excel workbook is the expected/best-supported case (one tab per category -- see .claude/skills/business-review-automation/references/standard-input-file-templates.md), but a single .docx, .pdf, or .pptx is also accepted and extracted best-effort into the same categories.",
+
+  "_examples_by_os": {
+    "mac_google_drive_for_desktop": "/Users/yourname/Google Drive/My Drive/Business-Review-Automation",
+    "windows_google_drive_for_desktop": "C:/Users/yourname/Google Drive/My Drive/Business-Review-Automation",
+    "linux_rclone_mount": "/home/yourname/gdrive/Business-Review-Automation"
+  },
+
+  "google_drive_root": "G:/My Drive/Business_Review_Agent",
+  "inputs_subfolder": "Input_Files",
+  "outputs_subfolder": "Output_Files",
+
+  "_resulting_paths": {
+    "inputs": "<google_drive_root>/<inputs_subfolder>",
+    "outputs": "<google_drive_root>/<outputs_subfolder>"
+  },
+
+  "_fallback_if_drive_not_configured": "data/inputs and data/outputs inside this project folder"
+}

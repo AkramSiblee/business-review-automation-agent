@@ -1,0 +1,2 @@
+1. the agent will first give status of input files: what is there and what is not there. ask for your permission to proceed
+2. we need to install google drive in desktop to syn the drive in online to transfer/upload output files there

@@ -1,0 +1,14 @@
+# Local data -- inputs/outputs live in Google Drive normally; these are just the fallback
+data/inputs/*
+data/outputs/*
+!data/inputs/.gitkeep
+!data/outputs/.gitkeep
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+
+# Python
+__pycache__/
+*.pyc
