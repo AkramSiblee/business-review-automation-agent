@@ -68,6 +68,19 @@ Copy that one file into your Drive `inputs` folder (or just point `data-paths.js
 Check the outputs folder for the workbook, memo, and deck, and read the Assumptions & Judgment Log
 to see how it handled each deliberately tricky element.
 
+**Then stress-test it on a complex group.** `sample-data/complex-test-data/Business_Review_Complex_Input_FY2025.xlsx`
+is a second synthetic workbook: Halcyon Industrial Holdings, 8 entities in 7 currencies. It plants every
+scenario in the complex-scenarios playbook:
+- **Group structure:** a 70%-owned subsidiary, a 40% equity-method JV with an April year, a mid-year acquisition
+  and a disposal.
+- **Currency:** a hyperinflationary entity.
+- **Financing and earnings quality:** a covenant near breach and a loan maturing within 12 months, an
+  undisclosed provision release and recurring "one-time" costs.
+- **Data shape:** year-to-date, signed and thousands-scaled ledgers in three languages.
+
+Its `README.md` is the answer key and `EXPECTED.json` holds the reference figures, so you can score a cycle's
+output. `generate_complex_dataset.py` rebuilds both deterministically.
+
 ## Ongoing use
 
 1. Each cycle, export your real data (GL/trial balance, cash, headcount, revenue/bookings, budget, FX
@@ -112,7 +125,8 @@ business-review-automation-agent/
 │   ├── inputs/                            <- drop your ONE file here each cycle (fallback if Drive isn't configured)
 │   └── outputs/                           <- deliverables land here (fallback if Drive isn't configured)
 ├── sample-data/
-│   └── sample-test-data/                  <- Meridian FY2025 test file, for first-run validation
+│   ├── sample-test-data/                  <- Meridian FY2025 test file, for first-run validation
+│   └── complex-test-data/                 <- Halcyon FY2025 stress test + answer key (README, EXPECTED.json)
 └── scripts/
     ├── brlib.py                           <- shared: path resolution, tab loading/classification, safe writes
     ├── verify_setup.py                    <- pre-flight check, start of every cycle

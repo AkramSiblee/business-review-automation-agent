@@ -93,8 +93,12 @@ def profile(inputs_dir):
                     "date_order_evidence": date_evidence,
                     "exact_duplicate_rows": dupes,
                 }
+                t["outlier_periods"] = outlier_periods(rows, pcol) if cat in ACTUALS else []
                 if cat == "01_GL_TrialBalance" and colmap.get("Debit") and colmap.get("Credit"):
                     t["tb_imbalances"] = tb_imbalances(rows, colmap, pcol)
+                if cat == "01_GL_TrialBalance" and colmap.get("Account Type") and colmap.get("Entity Code"):
+                    t["pnl_entities"] = sorted({str(r.get(colmap["Entity Code"])) for r in rows
+                                                if is_pnl_type(r.get(colmap["Account Type"]))})
                 if cat == "00_Company_Config":
                     t["config_rows"] = [{k: (str(v) if v is not None else None) for k, v in r.items()}
                                         for r in rows]
@@ -111,8 +115,30 @@ def profile(inputs_dir):
             "needs_extraction": needs_extraction, "unreadable": unreadable}
 
 
+ACTUALS = ("01_GL_TrialBalance", "02_CashBank_Position")
+
+
 def chk(check, scope, result, detail):
     return {"check": check, "scope": scope, "result": result, "detail": detail}
+
+
+def is_pnl_type(v):
+    s = str(v or "").lower()
+    return any(k in s for k in brlib.PNL_TYPE_HINTS) and not any(k in s for k in brlib.BS_TYPE_HINTS)
+
+
+def outlier_periods(rows, pcol):
+    """Periods after the file's main range that carry only a handful of rows -- e.g. forecast lines leaking into
+    an actuals export. Measured against the data, not today's date, so reviewing a past year still catches them."""
+    if not pcol:
+        return []
+    counts = Counter(brlib.to_period(r.get(pcol)) for r in rows)
+    counts.pop(None, None)
+    if len(counts) < 3:
+        return []
+    typical = sorted(counts.values())[len(counts) // 2]
+    last_core = max(p for p, n in counts.items() if n >= 0.5 * typical)
+    return sorted(p for p in counts if p > last_core)
 
 
 def config_fy_start(config_rows):
@@ -173,10 +199,11 @@ def shape_checks(t, cat, headers, rows, colmap, pcol, meta):
                            f"{adj} rows in an adjustment period -- fold into the last fiscal month and log "
                            f"(playbook 2.10)"))
         today = f"{date.today():%Y-%m}"
-        future = sorted(p for p in t["periods"] if p > today)
-        if future and cat in ("01_GL_TrialBalance", "02_CashBank_Position", "03_Headcount"):
+        future = sorted(set(p for p in t["periods"] if p > today) | set(t.get("outlier_periods", [])))
+        if future and cat in ACTUALS + ("03_Headcount",):
             out.append(chk("Future-dated actuals", src, "REVIEW",
-                           f"Periods after {today}: {', '.join(future)} -- likely forecast leakage (playbook 2.12)"))
+                           f"{', '.join(future)}: after today or after the file's main period range, with few rows "
+                           f"-- likely forecast leakage; exclude from actuals (playbook 2.12)"))
     ecol, ccol = colmap.get("Entity Code"), colmap.get("Currency")
     if ecol and ccol and cat in ("01_GL_TrialBalance", "03_Headcount", "04_Revenue_Bookings", "05_Budget_Forecast"):
         per_ent = defaultdict(set)
@@ -231,6 +258,9 @@ def gl_checks(t, rows, colmap, pcol, fy_start):
             key = (ent, acct, brlib.fiscal_year(p, fy_start))
             series[key][p] = series[key].get(p, 0.0) + amount(r, colmap, headers)
     today = f"{date.today():%Y-%m}"
+    leak = set(t.get("outlier_periods", []))
+    for ent in by_ent_period:
+        by_ent_period[ent] -= leak
     for ent, ps in sorted(by_ent_period.items()):
         closed = {p for p in ps if p <= today}  # future-dated rows are reported separately
         holes = sorted(set(brlib.month_range(min(closed), max(closed))) - closed) if closed else []
@@ -263,7 +293,7 @@ def gl_checks(t, rows, colmap, pcol, fy_start):
         accts = defaultdict(lambda: defaultdict(set))
         for r in rows:
             p = brlib.to_period(r.get(pcol))
-            if p:
+            if p and p not in leak:
                 accts[str(r.get(ecol))][p].add(str(r.get(acol)))
         for ent, per in sorted(accts.items()):
             union = set().union(*per.values())
@@ -391,12 +421,17 @@ def analyse(prof):
         expected.append({"category": cat, "status": status,
                          "matched": "; ".join(f'{t["source"]} ({t["confidence"]})' for t in hits)})
 
-    gl_periods = [p for p in union("01_GL_TrialBalance", "periods") if p <= f"{date.today():%Y-%m}"]
+    leak = {p for t in by_cat.get("01_GL_TrialBalance", []) for p in t.get("outlier_periods", [])}
+    gl_periods = [p for p in union("01_GL_TrialBalance", "periods") if p <= f"{date.today():%Y-%m}" and p not in leak]
     # Equity-method / non-consolidated entities only need a GL (for share of profit) -- no cash, budget,
     # headcount or bookings are expected for them (playbook 3.2).
     one_line = {r.get("Entity Code") for r in config_rows
                 if str(r.get("Consolidation Method") or "").strip().lower()
                 in ("equity", "equity method", "associate", "jv", "joint venture", "fair value", "not consolidated")}
+    # Dormant / holding entities: GL rows but no P&L activity -- no headcount, bookings or budget expected (3.7).
+    gl_tabs = [t for t in by_cat.get("01_GL_TrialBalance", []) if "pnl_entities" in t]
+    with_pnl = {e for t in gl_tabs for e in t["pnl_entities"]}
+    dormant = sorted(set(union("01_GL_TrialBalance", "entities")) - with_pnl - one_line) if gl_tabs else []
     gaps = []
     for cat in ("01_GL_TrialBalance", "02_CashBank_Position", "03_Headcount", "04_Revenue_Bookings",
                 "05_Budget_Forecast"):
@@ -404,7 +439,9 @@ def analyse(prof):
             continue
         have = set(union(cat, "entities"))
         for e in all_entities:
-            if e not in have and not (e in one_line and cat != "01_GL_TrialBalance"):
+            expected_here = not (e in one_line and cat != "01_GL_TrialBalance") and \
+                not (e in dormant and cat in ("03_Headcount", "04_Revenue_Bookings", "05_Budget_Forecast"))
+            if e not in have and expected_here:
                 gaps.append({"type": "Entity missing", "category": cat, "detail": f"{e} has no rows in {cat}"})
     for cat in ("02_CashBank_Position", "05_Budget_Forecast"):
         if cat in by_cat and gl_periods:
@@ -454,6 +491,10 @@ def analyse(prof):
     for t in prof["tables"]:
         checks.extend(t.get("shape_checks", []))
     checks.extend(config_checks(config_rows))
+    for e in dormant:
+        checks.append(chk("Dormant / holding entity", e, "INFO",
+                          "Balance sheet only, no P&L activity -- consolidate the balance sheet; no headcount, bookings "
+                          "or budget expected (playbook 3.7)"))
 
     fy_start = config_fy_start(config_rows)
     return {"entities": all_entities, "currencies": all_currencies, **multi, "expected": expected,

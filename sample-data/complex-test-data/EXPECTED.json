@@ -1,0 +1,98 @@
+{
+  "description": "Reference values for a correct FY2025 cycle on Business_Review_Complex_Input_FY2025.xlsx. USD figures use the file's own rates (average for P&L, period-end spot for balances).",
+  "term_loan_usd": 64300000,
+  "covenants": {
+    "group_adjusted_ebitda_fy_usd": 27820637,
+    "unrestricted_cash_dec_usd": 30376963,
+    "revolver_dec_usd": 5000000,
+    "net_debt_incl_revolver_usd": 38923037,
+    "net_leverage_recomputed": 1.4,
+    "net_leverage_threshold": 1.5,
+    "net_leverage_headroom_pct": 6.7,
+    "net_leverage_company_reported_q4": 1.22,
+    "why_company_figure_differs": "Company excludes the revolver from net debt",
+    "interest_cover_recomputed": 7.96,
+    "notes": "EBITDA here is as-reported for the year (UK01 Jan-Sep, MX01 Jul-Dec), translated at monthly average rates, excluding intercompany lines; a pro-forma covenant view would differ."
+  },
+  "mx01_acquisition": {
+    "consideration_usd": 25000000,
+    "cash_paid_usd": 22000000,
+    "earnout_fair_value_usd": 3000000,
+    "net_assets_at_acquisition_mxn": 253000000,
+    "net_assets_at_acquisition_usd_jun_spot": 13155494,
+    "provisional_goodwill_usd": 11844506,
+    "deal_costs_usd": 650000,
+    "earnout_fv_change_dec_usd": 300000,
+    "fy_net_income_post_acq_usd": 1061046
+  },
+  "uk01_disposal": {
+    "proceeds_usd": 9000000,
+    "parent_book_gain_usd": 3000000,
+    "net_assets_30sep_gbp": 6827763,
+    "net_assets_30sep_usd": 8809235,
+    "consolidated_gain_before_cta_recycling_usd": 190765,
+    "jan_sep_net_income_usd": 2576822,
+    "treatment": "Discontinued operation (major geographic area); restate KPIs on continuing ops"
+  },
+  "br01_nci": {
+    "ownership_pct": 70,
+    "fy_net_income_usd_all_12_months": 1881329,
+    "nci_share_30pct_usd_all_12_months": 564399,
+    "april_net_income_missing_from_export_usd": 150835
+  },
+  "jv01_equity_method": {
+    "ownership_pct": 40,
+    "fy_net_income_inr": 255712636,
+    "share_of_profit_usd": 1180003,
+    "fiscal_year_start": "April"
+  },
+  "hq01": {
+    "recurring_restructuring_usd": 480000,
+    "restructuring_months": [
+      "2025-02",
+      "2025-05",
+      "2025-08",
+      "2025-11"
+    ],
+    "dec_bill_and_hold_uplift_usd": 1196178,
+    "dec_dso_days": 60,
+    "prior_dso_days": 45,
+    "capitalized_dev_monthly_h1_usd": 150000,
+    "capitalized_dev_monthly_h2_usd": 400000,
+    "period13_adjustment_usd": 85000,
+    "future_dated_rows_period": "2026-02",
+    "related_party_customer": "Halcyon Family Trust Ltd (related party)",
+    "parent_investment_in_subsidiaries_dec_usd": 40100000,
+    "investment_in_jv_at_cost_usd": 4000000
+  },
+  "de01": {
+    "warranty_provision_release_nov_eur": 600000,
+    "dec_ic_in_transit_eur": 150000,
+    "gl_salary_vs_roster_factor": 1.21,
+    "export": "Year-to-date cumulative P&L"
+  },
+  "tr01": {
+    "spot_step_change_mar": -0.2,
+    "fy_net_income_try": -41522199,
+    "hyperinflation_index_supplied": false
+  },
+  "fx": {
+    "missing_rates": [
+      "MXN 2025-08 Period-Average"
+    ]
+  },
+  "concentration": {
+    "top_customer": "Atlas Automotive",
+    "top_customer_share_of_gross_bookings_approx": 0.16
+  },
+  "fy_net_income_native": {
+    "HQ01": 9216536,
+    "DE01": 1256484,
+    "BR01": 10901798,
+    "TR01": -41522199,
+    "MX01": 19918441,
+    "UK01": 2027763,
+    "JV01": 255712636,
+    "HLD1": 0
+  }
+}
