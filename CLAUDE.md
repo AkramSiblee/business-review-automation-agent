@@ -26,6 +26,9 @@ Input and output files are **not** stored inside this repository -- they live in
 Google-Drive-for-Desktop-synced folder on the user's machine, so a file dropped into Drive from a
 phone or browser shows up locally without any custom sync code.
 
+0. Run `python scripts/verify_setup.py` first, every cycle. It resolves the paths below the same way
+   every other script does (`scripts/brlib.py`), and it stops you early if Drive isn't mounted or an
+   input is still syncing.
 1. Read `config/data-paths.json` first, every cycle.
 2. Resolve the real input folder as `<google_drive_root>/<inputs_subfolder>` and the real output
    folder as `<google_drive_root>/<outputs_subfolder>` from that file.

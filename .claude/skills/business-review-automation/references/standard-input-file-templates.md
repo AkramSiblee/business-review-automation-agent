@@ -48,6 +48,25 @@ starting template if the user wants a blank version to fill in.
 `Period, Entity (From), Entity (To), Transaction Type, Amount, Currency, Description`
 - If this tab isn't provided for a multi-entity consolidation, Phase 3's intercompany elimination step cannot fully run — this must produce an explicit disclosure in the deliverables, not a silently under-eliminated consolidated number.
 
+## Optional tabs (provide when they apply — never flagged as missing when absent)
+
+**`08_Debt_Covenants`** — one row per facility × covenant × period
+`Entity Code, Period, Facility Name, Facility Type, Limit, Drawn, Currency, Maturity Date, Interest Rate, Covenant Name, Covenant Definition, Threshold, Comparison (>= / <=), Reported Value`
+- `Reported Value` is the company's own covenant calculation, if it has one. Phase 4 also recomputes it
+  from the GL per the definition, and flags any difference.
+
+**`09_Operational_KPIs`** — one row per entity × period × metric (long format)
+`Entity Code, Period, Segment, Metric, Value, Unit, Notes`
+- Non-financial inputs for the industry KPI packs (`industry-kpi-packs.md`): units shipped, stores,
+  sq ft, billable / available hours, GMV, active customers, ARR, NPL, and so on. Use metric names as the
+  business uses them, and map them to pack KPIs in Phase 0 once.
+
+**`10_Adjustments_Events`** — free-form register of known events
+`Entity Code, Period, Event Type, Description, Amount, Currency, One-Time (Y/N)`
+- `Event Type`: Acquisition / Disposal / Ownership Change / Restructuring / Impairment / Litigation /
+  Restatement / Refinancing / Other. This is the most direct way for a user to tell the review about a
+  complex event, rather than leaving it to be inferred from the ledger.
+
 ## Handling deviations from this contract
 
 - **Extra tabs:** keep and log them; they may feed future taxonomy extensions even if unused this cycle.

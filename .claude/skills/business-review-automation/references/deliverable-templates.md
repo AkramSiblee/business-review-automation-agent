@@ -22,7 +22,32 @@ Follow these structures in Phase 6, scaled per Phase 7. All three deliverables a
 8. **Revenue Drivers** \u2014 the new/expansion/churn/price-volume bridge
 9. **Headcount & Opex Detail** \u2014 by department, with hiring/attrition detail and cost-per-head
 10. **KPI Dashboard** \u2014 every metric from the taxonomy's KPI list in one view, trended
-11. **Red Flags & Variance Log** \u2014 every threshold trip (fixed and statistical) this cycle, with the driver-based explanation, and whether it's new or carried over
+11. **Red Flags & Variance Log** \u2014 every threshold trip (fixed and statistical) this cycle, with the driver-based explanation, and whether it's new or carried over. Add a storyline ID and a priority score (playbook \u00a710), so the memo and deck pull the top 5 from here.
+
+**Conditional tabs.** Add each one when its trigger applies, and keep it in every later cycle once added,
+for comparability:
+
+12. **Adjustments & Non-GAAP Bridge.** Trigger: any one-time item or add-back. Reported operating
+    income \u2192 EBITDA \u2192 Adjusted EBITDA, one row per add-back, with its source (GL account / note),
+    category, and how many of the last 6 periods the category has appeared in.
+13. **Liquidity, Debt & Covenants.** Trigger: any borrowing, or runway < 24 months.
+    - Facility register: limit, drawn, undrawn, maturity, rate.
+    - Covenant tests: definition, actual, threshold, headroom %.
+    - Normalized burn and runway.
+    - Maturity ladder.
+    - Going-concern indicator checklist, with each item present / absent.
+14. **Ownership & Scope.** Trigger: NCI, an equity-method entity, an acquisition, a disposal, or
+    discontinued operations.
+    - Entity, method, ownership % and date of change.
+    - Parent vs NCI split.
+    - Equity-method rollforward.
+    - Goodwill (provisional or final).
+    - Organic vs reported bridge.
+    - Continuing vs discontinued P&L.
+15. **Constant Currency.** Trigger: multi-currency. Current period at comparison rates, and the FX impact
+    on revenue, EBITDA and net income, per entity and in total.
+16. **Industry KPIs.** Trigger: a pack was selected in Phase 0. Show the pack's KPIs, trended, and mark
+    any whose input data was missing as "not available".
 
 ## Executive memo (.docx) \u2014 depth scales with cadence
 
@@ -39,6 +64,20 @@ Follow these structures in Phase 6, scaled per Phase 7. All three deliverables a
 8. Appendix reference to the workbook (state the filename, not a re-derivation)
 
 **Annual:** the Quarterly structure plus a Multi-Year Trend section and a Strategic Narrative / Next-Year Planning Input section.
+
+**Conditional memo sections (any cadence, including the monthly flash).** Insert each one when its
+trigger applies:
+
+- **Liquidity & Going-Concern Indicators.** Trigger: any indicator present, or covenant headroom < 15%.
+  Place it directly after the Executive Summary. List the indicators factually, with no conclusion.
+- **Earnings Quality.** Trigger: the Adjustments tab exists. A reported → adjusted reconciliation, plus
+  recurring "one-time" items and capitalization or provision effects.
+- **Scope & Comparability.** Trigger: an acquisition, a disposal, NCI, an equity-method entity, or a
+  restatement. State the organic vs reported and continuing vs discontinued figures, and what a reader
+  should compare against what.
+- **FX & Constant Currency.** Trigger: multi-currency with an FX impact > 2% of revenue or EBITDA.
+
+The Executive Summary leads with at most 5 ranked storylines (playbook §10).
 
 ## Board deck (.pptx) \u2014 slide count scales with cadence
 
@@ -57,5 +96,14 @@ Follow these structures in Phase 6, scaled per Phase 7. All three deliverables a
 10. Appendix (methodology, data lineage, FX/consolidation note if applicable)
 
 **Annual:** the Quarterly structure plus a multi-year trend slide and a strategic-narrative slide, typically 13-15 slides total.
+
+**Conditional slides (any cadence):**
+- **Liquidity & Covenants:** headroom gauge, runway, maturity ladder. Placed as slide 2 when 2+
+  going-concern indicators are present or any covenant is breached.
+- **Organic vs Reported / Scope Changes:** when acquisitions, disposals or discontinued operations exist.
+- **Reported → Adjusted EBITDA bridge:** a waterfall, when add-backs exceed 5% of reported EBITDA.
+
+Keep the main body within the cadence's slide count: move detail to the appendix rather than adding
+body slides.
 
 Design standard for every deck regardless of cadence: native charts (not screenshots), one clear "so what" per chart, no filler slides, and the same visual QA pass every cycle.

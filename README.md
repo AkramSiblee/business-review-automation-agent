@@ -47,8 +47,10 @@ tab/column contract, and `sample-data/` (below) for two ready-made examples of t
 5. **Run the setup check** (optional but recommended -- catches path typos before your first real
    cycle):
    ```
-   python3 scripts/verify_setup.py
+   python scripts/verify_setup.py
    ```
+   (Use `python3` on Mac/Linux.) Claude Code also runs this at the start of every cycle. It catches an
+   unmounted Drive, a file that's still syncing, or an input left open in Excel.
 
 ## First run: test the pipeline before trusting it with real data
 
@@ -103,11 +105,23 @@ business-review-automation-agent/
 ├── .claude/skills/business-review-automation/
 │   ├── SKILL.md                           <- the full method (8 phases, autonomy doctrine)
 │   └── references/                        <- taxonomy, thresholds, templates, triage guide, etc.
+│       ├── complex-scenarios-playbook.md  <- source-of-truth hierarchy, data-shape traps, NCI/equity method,
+│       │                                     M&A, hyperinflation, covenants, going concern, earnings quality
+│       └── industry-kpi-packs.md          <- SaaS, manufacturing, retail, services, projects, marketplace, lending
 ├── data/
 │   ├── inputs/                            <- drop your ONE file here each cycle (fallback if Drive isn't configured)
 │   └── outputs/                           <- deliverables land here (fallback if Drive isn't configured)
 ├── sample-data/
 │   └── sample-test-data/                  <- Meridian FY2025 test file, for first-run validation
 └── scripts/
-    └── verify_setup.py                    <- sanity-checks your config before a real cycle
+    ├── brlib.py                           <- shared: path resolution, tab loading/classification, safe writes
+    ├── verify_setup.py                    <- pre-flight check, start of every cycle
+    ├── profile_inputs.py                  <- Phase 1/2.5: triage + Data Validation Report
+    ├── verify_workbook.py                 <- Phase 8: Excel recalculation + formula-error scan
+    ├── render_deck.py                     <- Phase 8: slide PNGs for visual QA
+    ├── final_qa.py                        <- Phase 8: placeholders, currency/period/basis, cross-doc figures
+    └── reference/meridian_fy2025/         <- worked example from the sample run (structure only, not reusable as-is)
 ```
+
+Per-cycle build scripts are written to `<outputs>/_work/<Period>/`, next to the data, so client
+figures never end up in this repo.

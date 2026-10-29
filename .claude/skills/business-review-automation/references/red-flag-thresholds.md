@@ -15,6 +15,19 @@ Confirm once in Phase 0; reuse every cycle. All thresholds here are expressed as
 | DSO (days sales outstanding) | Increases > 15% vs. trailing 3-month average | Currency-agnostic by construction |
 | Customer/revenue concentration | Top 1 customer > 15% of revenue, or top 5 > 40% | Only where customer-level data is available |
 | Prior-cycle flag, unresolved | Any item flagged last cycle with no improvement | Escalate rather than re-flag identically |
+| Covenant headroom | < 15% headroom on any covenant, or any breach | Per the facility's own definitions. A breach is always a headline item. |
+| Going-concern indicators | Any one present (playbook §5.4) | 2+ present → slide 1 / memo executive summary. Never conclude, only list. |
+| Debt maturity | Any facility maturing within 12 months without refinancing evidence | Also check that maturities fall inside the runway window |
+| AR vs revenue growth | AR growth exceeds revenue growth by > 15 pts (same period, YoY or QoQ) | Cutoff / collection risk signal |
+| Inventory vs COGS growth | Inventory growth exceeds COGS growth for 2+ consecutive periods | Obsolescence signal |
+| DPO stretch | DPO up > 15% vs the trailing 3-month average | Treat the cash benefit as non-recurring |
+| Deferred revenue | Falls > 10% QoQ while recognized revenue is flat or up | Leading churn indicator (subscription businesses) |
+| Effective tax rate | Moves > 10 pts vs the prior period or the statutory rate | Needs a stated driver |
+| "One-time" items recurring | Same add-back category in 3+ of the last 6 periods | Show Adjusted EBITDA with and without it |
+| Capitalization shift | Capitalized cost up > 25% while the related opex line falls | Margin improvement may be accounting, not operations |
+| FX step change | Any functional currency's spot rate moves > 10% in one month | Devaluation / hyperinflation watch. Split the variance at constant currency. |
+| Organic vs reported gap | Reported growth exceeds organic growth by > 5 pts | Growth is acquisition-driven. Lead with the organic figure. |
+| Industry pack thresholds | Per `industry-kpi-packs.md` | Only for the pack(s) selected in Phase 0 |
 
 ## Statistical (trend-based) detection \u2014 the complement to fixed thresholds
 
