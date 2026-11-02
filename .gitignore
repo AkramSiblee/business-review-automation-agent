@@ -1,11 +1,7 @@
-# Local data -- inputs/outputs live in Google Drive normally; these are just the fallback
-data/inputs/*
-data/outputs/*
-!data/inputs/.gitkeep
-!data/outputs/.gitkeep
-
-# Client data folders (confidential inputs + deliverables) -- never commit
-data/CLNT-*/
+# Data folder: one subfolder per client or test dataset, each with Input/ and Output/.
+# Confidential client files and generated deliverables -- never commit. Only the README is tracked.
+data/*
+!data/README.md
 
 # OS / editor cruft
 .DS_Store

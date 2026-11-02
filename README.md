@@ -38,12 +38,23 @@ tab/column contract, and `sample-data/` (below) for two ready-made examples of t
    everything in its references/ folder before we start."* Project-level skill auto-discovery is a
    newer Claude Code feature and the exact convention may have moved since this was built -- if it
    doesn't pick the skill up automatically, the explicit-read approach always works regardless.
-4. **Point it at your Google Drive folder.** In Google Drive (web or desktop), create a folder --
-   e.g. `Business-Review-Automation` with `inputs` and `outputs` subfolders inside it. Find where
-   Google Drive for Desktop syncs that to locally (typically `~/Google Drive/My Drive/...` on Mac,
-   `G:\My Drive\...` or a path under your user folder on Windows). Open `config/data-paths.json` in
-   this project and replace `google_drive_root` with that local path. Each cycle, the `inputs`
-   subfolder should hold exactly your one input file -- nothing else.
+4. **Point it at your data folder.** All client data lives in ONE folder, with one subfolder per
+   client, and each client folder has an `Input` and an `Output` subfolder:
+   ```
+   Business-Review-Automation/
+   ├── CLNT-1/
+   │   ├── Input/     <- this cycle's one input file
+   │   └── Output/    <- every deliverable lands here
+   └── CLNT-2/
+       ├── Input/
+       └── Output/
+   ```
+   Create it in Google Drive (web or desktop) and find where Google Drive for Desktop syncs it locally
+   (typically `~/Google Drive/My Drive/...` on Mac, `G:\My Drive\...` or a path under your user folder
+   on Windows). In `config/data-paths.json`, set `google_drive_root` to that local path and
+   `active_client` to the client folder you're working on. Each cycle, that client's `Input` folder
+   should hold exactly one input file -- nothing else. To switch clients, change `active_client`, or
+   simply tell Claude which client to run.
 5. **Run the setup check** (optional but recommended -- catches path typos before your first real
    cycle):
    ```
@@ -125,10 +136,10 @@ so every cycle checks itself against figures you already trust:
 
 ## If you'd rather not install Google Drive for Desktop
 
-You can skip Drive entirely and just use the local `data/inputs/` and `data/outputs/` folders in
-this project directly -- drag your one file into `data/inputs/` and pull results out of
-`data/outputs/` manually. `config/data-paths.json`'s fallback covers this automatically (leave
-`google_drive_root` unset).
+You can skip Drive entirely and use the project's own `data/` folder, which has the same layout
+(`data/<CLIENT>/Input` and `data/<CLIENT>/Output`; see `data/README.md`). Drag your one file into the
+client's `Input` folder and pull results out of its `Output` folder manually. `config/data-paths.json`'s
+fallback covers this automatically (leave `google_drive_root` unset).
 
 A fully API-based alternative (Claude Code pulling/pushing to Drive directly via the Drive API,
 without any local sync client) is also possible but needs its own Google Cloud OAuth credentials

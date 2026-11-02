@@ -2,8 +2,12 @@
 Shared helpers for every business-review script: path resolution, input discovery, tab loading,
 category matching, period/date detection, and safe file writes.
 
-Every script imports this instead of hardcoding "data/inputs" / "data/outputs", so the pipeline
-works from any working directory and always honours config/data-paths.json.
+Every script imports this instead of hardcoding folder paths, so the pipeline works from any working
+directory and always honours config/data-paths.json.
+
+Folder layout: one folder per client (or test dataset) under the data root, each with its own Input and
+Output subfolders -- <google_drive_root>/<active_client>/Input and .../Output. The client is chosen by
+`active_client` in the config, overridden for one run by the BR_CLIENT environment variable.
 """
 import json
 import os
@@ -123,21 +127,46 @@ def load_config():
         return json.load(f)
 
 
-def resolve_paths(create=False):
-    """Return (inputs_dir, outputs_dir, using_drive). Falls back to data/ when Drive isn't configured
-    or the configured Drive root isn't mounted (Drive for Desktop not running)."""
-    cfg = load_config()
+def active_client(cfg=None):
+    """The client/dataset folder this run works on: BR_CLIENT env var, else config active_client."""
+    cfg = cfg if cfg is not None else load_config()
+    return (os.environ.get("BR_CLIENT") or cfg.get("active_client") or "").strip()
+
+
+def data_root(cfg=None):
+    """(root_dir, using_drive): the folder that holds one subfolder per client."""
+    cfg = cfg if cfg is not None else load_config()
     root = (cfg.get("google_drive_root") or "").strip()
-    inputs_sub = cfg.get("inputs_subfolder") or "inputs"
-    outputs_sub = cfg.get("outputs_subfolder") or "outputs"
     if root and not root.startswith("REPLACE_ME") and os.path.isdir(root):
-        paths = (os.path.normpath(os.path.join(root, inputs_sub)),
-                 os.path.normpath(os.path.join(root, outputs_sub)), True)
-    else:
-        if root and not root.startswith("REPLACE_ME"):
-            warn(f"google_drive_root '{root}' is not reachable (is Google Drive for Desktop running?) -- "
-                 f"falling back to local data/inputs and data/outputs.")
-        paths = (os.path.join(ROOT, "data", "inputs"), os.path.join(ROOT, "data", "outputs"), False)
+        return os.path.normpath(root), True
+    if root and not root.startswith("REPLACE_ME"):
+        warn(f"google_drive_root '{root}' is not reachable (is Google Drive for Desktop running?) -- "
+             f"falling back to the local data/ folder in this project.")
+    return os.path.join(ROOT, "data"), False
+
+
+def list_clients(cfg=None):
+    """Client/dataset folders under the data root (any folder holding an Input or Output subfolder)."""
+    cfg = cfg if cfg is not None else load_config()
+    root, _ = data_root(cfg)
+    ins, outs = cfg.get("inputs_subfolder") or "Input", cfg.get("outputs_subfolder") or "Output"
+    if not os.path.isdir(root):
+        return []
+    return sorted(n for n in os.listdir(root) if not n.startswith(IGNORE_PREFIXES)
+                  and (os.path.isdir(os.path.join(root, n, ins)) or os.path.isdir(os.path.join(root, n, outs))))
+
+
+def resolve_paths(create=False):
+    """Return (inputs_dir, outputs_dir, using_drive) for the active client:
+    <root>/<client>/<Input>, <root>/<client>/<Output>. Without an active client (legacy config) the
+    subfolders sit directly under the root. Root falls back to the project's data/ folder when Drive
+    isn't configured or isn't mounted."""
+    cfg = load_config()
+    root, using_drive = data_root(cfg)
+    client = active_client(cfg)
+    base = os.path.join(root, client) if client else root
+    paths = (os.path.normpath(os.path.join(base, cfg.get("inputs_subfolder") or "Input")),
+             os.path.normpath(os.path.join(base, cfg.get("outputs_subfolder") or "Output")), using_drive)
     if create:
         os.makedirs(paths[0], exist_ok=True)
         os.makedirs(paths[1], exist_ok=True)

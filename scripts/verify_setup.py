@@ -45,11 +45,23 @@ def main():
 
     root = (cfg.get("google_drive_root") or "").strip()
     if not root or root.startswith("REPLACE_ME"):
-        info("google_drive_root not configured -- using local data/inputs and data/outputs. Files won't "
+        info("google_drive_root not configured -- using the local data/ folder in this project. Files won't "
              "sync to your phone/browser until you set it.")
     elif not os.path.isdir(root):
         fail(f"google_drive_root '{root}' is not reachable. Start Google Drive for Desktop (and check the "
              f"drive letter/path), or the cycle will silently fall back to local folders.")
+
+    clients = brlib.list_clients(cfg)
+    client = brlib.active_client(cfg)
+    info(f"Client folders found: {', '.join(clients) if clients else '(none)'}")
+    if not client:
+        fail("No active client. Set \"active_client\" in config/data-paths.json to one of the folders above "
+             "(or create <data root>/<CLIENT>/Input and Output first).")
+    elif client not in clients:
+        fail(f"Active client '{client}' has no Input/Output folder under the data root. Create "
+             f"{client}/Input and {client}/Output, or fix the name.")
+    else:
+        ok(f"Active client: {client}" + (" (from BR_CLIENT)" if os.environ.get("BR_CLIENT") else ""))
 
     inputs_dir, outputs_dir, using_drive = brlib.resolve_paths()
     for label, path in (("inputs", inputs_dir), ("outputs", outputs_dir)):

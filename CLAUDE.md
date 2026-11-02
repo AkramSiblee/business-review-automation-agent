@@ -30,11 +30,17 @@ phone or browser shows up locally without any custom sync code.
    every other script does (`scripts/brlib.py`), and it stops you early if Drive isn't mounted or an
    input is still syncing.
 1. Read `config/data-paths.json` first, every cycle.
-2. Resolve the real input folder as `<google_drive_root>/<inputs_subfolder>` and the real output
-   folder as `<google_drive_root>/<outputs_subfolder>` from that file.
+2. **One folder per client.** `google_drive_root` holds one folder per client or test dataset (e.g.
+   `CLNT-1`, `TEST-Meridian-FY2025`), each with its own `Input` and `Output` subfolders. The input
+   folder is `<google_drive_root>/<active_client>/Input` and the output folder is
+   `<google_drive_root>/<active_client>/Output`. **Confirm which client the cycle is for before starting**:
+   if the user names a different client than `active_client`, update `active_client` in the config (or
+   run the scripts with the `BR_CLIENT` environment variable set). For a new client, create its `Input`
+   and `Output` folders first. Never read one client's inputs or write into another client's folder.
 3. If `google_drive_root` is still unset/`"REPLACE_ME/..."` (i.e. the user hasn't configured it yet),
-   fall back to the local `data/inputs/` and `data/outputs/` folders in this project, and tell the user
-   plainly that Drive isn't configured yet so they know why files aren't syncing to their phone/browser.
+   fall back to `data/<active_client>/Input` and `data/<active_client>/Output` in this project, and tell
+   the user plainly that Drive isn't configured yet so they know why files aren't syncing to their
+   phone/browser.
 4. **Read the one file present in the resolved inputs folder** -- every tab if it's an Excel workbook,
    or everything extractable (tables, figures, labeled line items) if it's a docx/pdf/pptx. The
    resolved inputs folder should normally contain exactly one file per cycle; if more than one is
@@ -51,8 +57,8 @@ one workbook) built specifically to exercise this skill: customer churn and conc
 restructuring charge and RIF, an inventory write-down, a debt draw that masks a cash-vs-earnings
 divergence, multi-currency/multi-standard consolidation (US GAAP / IFRS / Ind AS), transfer pricing
 between entities, a deliberately missing budget tab, ambiguous DD/MM/YYYY dates, and a disclosed
-restatement. Copy that single file into the resolved inputs folder (or point `config/data-paths.json`
-at `sample-data/sample-test-data` directly) and run a full cycle before connecting real data, to
+restatement. It is already set up as the `TEST-Meridian-FY2025` client (set `active_client` to that name; the
+complex Halcyon dataset is `TEST-Halcyon-FY2025`) and run a full cycle before connecting real data, to
 confirm the pipeline behaves end-to-end and to see how the skill's autonomy doctrine handles each
 embedded issue.
 

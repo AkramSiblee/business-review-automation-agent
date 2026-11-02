@@ -43,8 +43,8 @@ below flag what's Windows-specific vs. portable.
 ## Optional
 
 - **Google Drive for Desktop** — only needed for the phone/browser "drop a file, it syncs, Claude
-  picks it up" workflow described in the README. Skip it and use the local `data/inputs/` /
-  `data/outputs/` fallback folders instead; the pipeline works identically either way.
+  picks it up" workflow described in the README. Skip it and use the local `data/<CLIENT>/Input` /
+  `data/<CLIENT>/Output` fallback folders instead; the pipeline works identically either way.
 - **Git** — the project folder is now a git repo (initialized locally) so changes are diffable
   going forward. Not required by the skill itself, but recommended for tracking edits to the
   skill, config, or scripts over time.

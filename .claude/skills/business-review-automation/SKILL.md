@@ -13,7 +13,9 @@ Turns a single uploaded file per cycle — the expected and best-supported case 
 
 These scripts handle the mechanical, repeatable parts of the cycle, so they behave the same way every
 time. Claude's judgment covers the rest. All of them resolve folders from `config/data-paths.json`
-through `scripts/brlib.py`, so never hardcode `data/inputs` or `data/outputs`.
+through `scripts/brlib.py`, so never hardcode a folder path. Data is organised one folder per client (`<root>/<client>/Input` and
+`.../Output`), selected by `active_client` in the config or the `BR_CLIENT` environment variable. Confirm the
+client before a cycle starts, and never read or write across client folders.
 
 | When | Command | What it gives you |
 |---|---|---|

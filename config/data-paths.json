@@ -1,18 +1,19 @@
 {
-  "_comment": "Edit ONLY the values below, then delete this comment. These are the local, Google-Drive-for-Desktop-synced folder paths on YOUR machine -- not paths inside this project. Claude Code reads this file at the start of every business review cycle to find your real input/output locations. Use forward slashes even on Windows (e.g. C:/Users/you/Google Drive/My Drive/...).",
-  "_input_model": "Each cycle, inputs_subfolder should hold exactly ONE file: a multi-tab Excel workbook is the expected/best-supported case (one tab per category -- see .claude/skills/business-review-automation/references/standard-input-file-templates.md), but a single .docx, .pdf, or .pptx is also accepted and extracted best-effort into the same categories.",
+  "_comment": "Edit ONLY the values below. google_drive_root is the ONE folder holding all client data -- a local, Google-Drive-for-Desktop-synced path on YOUR machine, not a path inside this project. Inside it, each client or test dataset has its own folder with Input and Output subfolders. Set active_client to the folder the next cycle should run on (or set the BR_CLIENT environment variable for a single run). Use forward slashes even on Windows.",
+  "_input_model": "Each cycle, each client's Input folder should hold exactly ONE file: a multi-tab Excel workbook is the expected/best-supported case (one tab per category -- see .claude/skills/business-review-automation/references/standard-input-file-templates.md), but a single .docx, .pdf, or .pptx is also accepted and extracted best-effort into the same categories.",
   "_examples_by_os": {
     "mac_google_drive_for_desktop": "/Users/yourname/Google Drive/My Drive/Business-Review-Automation",
     "windows_google_drive_for_desktop": "C:/Users/yourname/Google Drive/My Drive/Business-Review-Automation",
     "linux_rclone_mount": "/home/yourname/gdrive/Business-Review-Automation"
   },
   "google_drive_root": "C:/Users/mhd_s/OneDrive/Google Drive Docs/Biz Infograph/Claude/business-review-automation-agent/data",
-  "inputs_subfolder": "inputs",
-  "outputs_subfolder": "outputs",
+  "active_client": "TEST-Halcyon-FY2025",
+  "inputs_subfolder": "Input",
+  "outputs_subfolder": "Output",
   "_resulting_paths": {
-    "inputs": "<google_drive_root>/<inputs_subfolder>",
-    "outputs": "<google_drive_root>/<outputs_subfolder>"
+    "inputs": "<google_drive_root>/<active_client>/<inputs_subfolder>",
+    "outputs": "<google_drive_root>/<active_client>/<outputs_subfolder>"
   },
-  "_fallback_if_drive_not_configured": "data/inputs and data/outputs inside this project folder",
-  "_root_note": "Project's own data folder (switched 30 Oct 2026; inputs/outputs subfolders, gitignored). Previous values: C:/BusinessReview (29-30 Oct 2026); G:/My Drive/Business_Review_Agent (Input_Files / Output_Files)."
+  "_fallback_if_drive_not_configured": "data/<active_client>/Input and data/<active_client>/Output inside this project folder",
+  "_root_note": "Project's own data folder. Reorganised 1 Nov 2026 into one folder per client/dataset (CLNT-1, TEST-Meridian-FY2025, TEST-Halcyon-FY2025), each with Input/Output; the old data/inputs + data/outputs and G:/My Drive/Business_Review_Agent runs were merged in (G: copied, left in place). Previous roots: C:/BusinessReview (29-30 Oct 2026); G:/My Drive/Business_Review_Agent (Input_Files / Output_Files)."
 }
