@@ -22,6 +22,8 @@ through `scripts/brlib.py`, so never hardcode `data/inputs` or `data/outputs`.
 | Phase 8 | `python scripts/verify_workbook.py <workbook.xlsx>` | Excel full recalculation, formula-error scan with cell addresses, and articulation/tie-out rows. Exit 3 = no desktop Excel, so do this check manually and say so. |
 | Phase 8 | `python scripts/render_deck.py <deck.pptx>` | One PNG per slide in `_deck_preview/`. Read every PNG for the visual QA pass. |
 | Phase 8 | `python scripts/final_qa.py --period P --currency CCY [--period-text ..] [--basis ..] --expect "Revenue=1,234,567" ...` | Checks for placeholder text, checks that currency, period and basis are stated on every deliverable, and that the headline figures match between memo and deck. |
+| Phase 9 | `python scripts/build_signoff.py --spec <outputs>/_work/<Period>/signoff_inputs.json` | Writes `<Period>_Reconciliation_and_Signoff.xlsx`: control totals for the client to tick against their own systems, the cycle's built-in check results, every MEDIUM/LOW judgment call with an Agree / Correct dropdown, open items, and a sign-off block. Re-building the same period keeps the client's entries. |
+| Phase 9 / next cycle | `python scripts/build_signoff.py --check <outputs>/<Period>_Reconciliation_and_Signoff.xlsx` | Reads the client's completed copy back: CHECK figures, corrections, unanswered questions, open items, decision. Exit 0 = signed off clean, 1 = items to action, 2 = not filled in yet. |
 
 The profiler's output is the **starting point** for triage, not the final word. Claude still reviews
 anything that isn't HIGH, reads any docx/pdf/pptx the profiler lists as "needs extraction", and adds the
@@ -55,6 +57,7 @@ The default mode is **run the full cycle to a complete draft in one pass**, not 
 ## Phase 0 — Standing setup (once per business, revisited only when something structural changes)
 
 0. **Fast-path check, every cycle, before reading anything else.** Look for an existing history workbook in the resolved outputs folder. If one exists and this cycle carries no flagged structural change, read its **Config & Setup** tab directly (`references/deliverable-templates.md`) for the reporting currency, fiscal year convention, accounting standard, thresholds, and consolidation methodology, and skip straight to Phase 1 — do not re-read the reference files in steps 1-4 below. Fall through to the full setup below only on a genuine first cycle for this business, or when a structural change is being declared this cycle.
+0a. **Prior period's sign-off, every cycle.** If the previous period's `<Period>_Reconciliation_and_Signoff.xlsx` exists in the outputs folder, run `build_signoff.py --check` on it. Tell the user in one line whether it was signed off. Carry every unresolved item (CHECK figure, "Correct this", "Need more info", open item) into this cycle: treat a correction as a confirmed instruction for this cycle's treatment and log it in the Judgment Log, and list still-open items on this cycle's Open Items tab. A prior period that was never reviewed is not a blocker; say so and continue.
 1. **Locale & standards configuration.** Read `references/locale-and-standards-config.md`. Confirm once, per business (or per entity if consolidating multiple): reporting currency, fiscal year convention, accounting standard (US GAAP / IFRS / local GAAP), and the number/date format conventions to use in output. This is the configuration most likely to silently corrupt a global user's numbers if skipped — do not infer it from the first file alone without checking it explicitly at least once.
 2. **Taxonomy.** Read `references/chart-of-accounts-kpi-taxonomy.md` — a default P&L / balance sheet / cash flow / revenue-driver / headcount taxonomy and KPI list, with GAAP/IFRS variant notes. Confirm or edit once; treat the agreed version as fixed across cycles so comparability isn't broken by silent redesign.
 3. **Thresholds.** Read `references/red-flag-thresholds.md` — defaults are materiality-scaled (percentage- and standard-deviation-based) rather than fixed dollar amounts, so the same configuration works for a business of any size or currency. Confirm or adjust once.
@@ -260,10 +263,46 @@ print it.
 - [ ] Adjusted figures (Adjusted EBITDA etc.) reconcile line by line to the reported figure, which is presented first
 - [ ] Going-concern indicators and covenant headroom are stated whenever any indicator is present; liquidity issues rank above performance issues in the executive summary
 
+## Phase 9 — Reconciliation & Sign-off (every cycle, after Phase 8 passes)
+
+A test dataset has an answer key; a real client's file doesn't. This file is the real-data substitute:
+it lets the client prove the review against figures they already trust, and records their approval. It
+is generated every cycle, real or test data, and is the last file written.
+
+1. **Write the spec** `<outputs>/_work/<Period>/signoff_inputs.json` from the build scripts, reading every
+   value *from the finished model workbook* (never retyped). Schema and the minimum control-figure list are
+   in `references/deliverable-templates.md` ("Reconciliation & Sign-off"). In short:
+   - **figures:** per entity, in its own currency, the totals the client can read straight off that
+     entity's accounting system, bank or payroll (revenue, net income, closing cash, total assets, period-end
+     headcount); then the group totals in the reporting currency; then any covenant ratio. Each with the
+     model cell it came from and where the client finds their own figure. If the client already gave
+     control totals in conversation, put them in `client_value`.
+   - **checks:** the results of the structural tie-outs and the Phase 8 scripts (PASS / WARN / FAIL with detail).
+   - **judgments:** every MEDIUM and LOW call, with the treatment applied and its effect. Omit the key to have
+     the script read them from the model's Assumptions & Judgment Log tab.
+   - **open_items:** every LOW item carried open, and anything else the data could not resolve.
+2. Run `python scripts/build_signoff.py --spec ...`.
+3. **Deliver** all five files and tell the user, in plain words, that the sign-off file is theirs to complete:
+   type their own figures into the yellow cells, answer each judgment call, sign, save it in place, then say
+   "check the sign-off for <Period>". Do not wait for this before ending the turn: unlike Phase 2.5 it is not
+   a blocking checkpoint, because the client may take days.
+4. **When the client returns it,** run `--check`. For every CHECK figure, find the cause before changing
+   anything: the review's error (fix and rebuild), the export missing data (ask for a corrected file), or a
+   legitimate difference such as the client's own consolidation using different rates (explain it in the
+   comment and the Judgment Log). Apply every "Correct this" as a confirmed instruction, answer every "Need
+   more info", then rebuild the affected deliverables for the same period, re-run Phase 8, and rebuild the
+   sign-off file. The rebuild keeps the client's entries and resets only the decision, so they re-approve the
+   changed numbers.
+
+Never edit the client's entries (their figures, responses, comments or decision) yourself, and never mark a
+figure PASS that the client hasn't entered.
+
 ## Output format
 
-Four files per cycle: a `.xlsx` Data Validation Report (Phase 2.5, generated first, before the checkpoint),
+Five files per cycle: a `.xlsx` Data Validation Report (Phase 2.5, generated first, before the checkpoint),
 then — once the user has responded to that checkpoint — the three main deliverables: `.xlsx` (full model),
-`.docx` (executive memo), `.pptx` (board deck). All named consistently with period and currency (e.g.,
-`2026-Q3_Business_Review_USD.xlsx`, `2026-Q3_Data_Validation_Report.xlsx`) so a global user's archive stays
-navigable across currencies and periods.
+`.docx` (executive memo), `.pptx` (board deck), and finally the `.xlsx` Reconciliation & Sign-off file
+(Phase 9) for the client to complete. All named consistently with period and currency (e.g.,
+`2026-Q3_Business_Review_USD.xlsx`, `2026-Q3_Data_Validation_Report.xlsx`,
+`2026-Q3_Reconciliation_and_Signoff.xlsx`) so a global user's archive stays navigable across currencies and
+periods.

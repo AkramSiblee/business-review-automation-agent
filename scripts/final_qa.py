@@ -5,7 +5,8 @@ Phase 8 QA -- text-level checks across every deliverable for one period.
   python scripts/final_qa.py --period 2026-Q1 --currency USD [--period-text "Q1 FY2026"]
                              [--basis "US GAAP"] [--expect "Revenue=12,345,678" ...]
 
-Checks, per deliverable (<Period>_*.xlsx / .docx / .pptx in the resolved outputs folder):
+Checks, per deliverable (<Period>_*.xlsx / .docx / .pptx in the resolved outputs folder; the Data Validation
+Report and the Reconciliation & Sign-off file are excluded -- the sign-off file has blank client columns by design):
   - no placeholder text (TODO, TBD, {{ }}, Lorem ipsum, ...)
   - currency code, fiscal-period text, and accounting basis are stated
   - every --expect headline figure appears verbatim in the memo AND the deck (cross-document check)
@@ -72,7 +73,8 @@ def main():
     outputs = args.outputs or brlib.resolve_paths()[1]
     files = [f for ext in ("xlsx", "docx", "pptx")
              for f in glob.glob(os.path.join(outputs, f"{args.period}_*.{ext}"))
-             if "Data_Validation_Report" not in f and not os.path.basename(f).startswith("~$")]
+             if "Data_Validation_Report" not in f and "Reconciliation_and_Signoff" not in f
+             and not os.path.basename(f).startswith("~$")]
     kinds = {os.path.splitext(f)[1] for f in files}
     missing = {".xlsx", ".docx", ".pptx"} - kinds
     if missing:

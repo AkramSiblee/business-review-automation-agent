@@ -78,8 +78,10 @@ scenario in the complex-scenarios playbook:
   undisclosed provision release and recurring "one-time" costs.
 - **Data shape:** year-to-date, signed and thousands-scaled ledgers in three languages.
 
-Its `README.md` is the answer key and `EXPECTED.json` holds the reference figures, so you can score a cycle's
-output. `generate_complex_dataset.py` rebuilds both deterministically.
+To check the result, open `sample-data/answer-keys/Complex_Test_Answer_Key_FY2025.xlsx`. It explains in plain
+English what the review produces and how, lists every planted issue with what a correct review should do, gives
+the expected figures, and has a scorecard you fill in. Copy only the input workbook into the inputs folder, never
+the answer key. The technical files that build the dataset live in `developer/complex-test-data/`.
 
 ## Ongoing use
 
@@ -94,6 +96,32 @@ output. `generate_complex_dataset.py` rebuilds both deterministically.
    desktop. It'll sync locally within moments.
 3. In VS Code, ask Claude Code to run the cycle.
 4. Deliverables land in the Drive `outputs` folder and sync back up automatically -- no extra step.
+5. Open `<Period>_Reconciliation_and_Signoff.xlsx` from the outputs folder, fill in the yellow cells, save it
+   in place, and tell Claude "check the sign-off for <Period>" (see below).
+
+## How do I know the results are right? (real data has no answer key)
+
+The test datasets come with answer keys because their correct answers were planted. Your real data doesn't,
+so every cycle checks itself against figures you already trust:
+
+- **Reconciliation & Sign-off file (every cycle).** It lists the review's key figures per entity (revenue, net
+  income, cash, total assets, headcount) and for the group. Type the same figures from your own accounting
+  system, bank statements and payroll into the yellow column: each one shows PASS or CHECK. Then agree with or
+  correct each judgment call the review made, give owners to open items, and sign. Claude reads your completed
+  file back, investigates every CHECK, applies your corrections, and rebuilds the deliverables (your entries are
+  kept, and you re-approve the changed numbers).
+- **Built-in checks.** Every cycle verifies that the balance sheet balances, cash ties to the bank data,
+  payroll ties to headcount, intercompany trading cancels out, the workbook has no formula errors, and the memo
+  and deck quote the same numbers. Results are on the sign-off file's "Built-in Checks" tab. They prove the
+  review is consistent with itself; your control totals prove it matches reality.
+
+**Before relying on it for a new client:**
+1. **Back-test a closed period.** Run a cycle on a past quarter or year that already has an approved board pack
+   or audited accounts, and compare. That past pack is your answer key for real data.
+2. **Run in parallel for 2-3 cycles.** Keep the existing manual process going alongside, and compare the
+   outputs before switching over.
+3. **Then sign off every cycle.** The next cycle starts by reading the previous sign-off, so anything left
+   unresolved carries forward instead of being forgotten.
 
 ## If you'd rather not install Google Drive for Desktop
 
@@ -126,7 +154,10 @@ business-review-automation-agent/
 │   └── outputs/                           <- deliverables land here (fallback if Drive isn't configured)
 ├── sample-data/
 │   ├── sample-test-data/                  <- Meridian FY2025 test file, for first-run validation
-│   └── complex-test-data/                 <- Halcyon FY2025 stress test + answer key (README, EXPECTED.json)
+│   ├── complex-test-data/                 <- Halcyon FY2025 stress-test input (the only file to copy)
+│   └── answer-keys/                       <- plain-English answer key + scorecard (Excel); never copy to inputs
+├── developer/
+│   └── complex-test-data/                 <- technical files: dataset generator, EXPECTED.json, answer-key builder
 └── scripts/
     ├── brlib.py                           <- shared: path resolution, tab loading/classification, safe writes
     ├── verify_setup.py                    <- pre-flight check, start of every cycle
@@ -134,6 +165,7 @@ business-review-automation-agent/
     ├── verify_workbook.py                 <- Phase 8: Excel recalculation + formula-error scan
     ├── render_deck.py                     <- Phase 8: slide PNGs for visual QA
     ├── final_qa.py                        <- Phase 8: placeholders, currency/period/basis, cross-doc figures
+    ├── build_signoff.py                   <- Phase 9: Reconciliation & Sign-off file; --check reads it back
     └── reference/meridian_fy2025/         <- worked example from the sample run (structure only, not reusable as-is)
 ```
 

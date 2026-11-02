@@ -1,15 +1,22 @@
 # Complex test dataset: Halcyon Industrial Holdings, FY2025
 
+**Developer folder.** This is the technical answer key for the Halcyon stress test. Users never need these files:
+the input lives in `sample-data/complex-test-data/` and the plain-English answer key (Excel, with a scoring sheet)
+lives in `sample-data/answer-keys/`. Keep both files below out of the inputs folder: a cycle that can read the
+answer key proves nothing.
+
 `Business_Review_Complex_Input_FY2025.xlsx` is a synthetic, single-workbook input that plants every scenario in
 `.claude/skills/business-review-automation/references/complex-scenarios-playbook.md`. Use it after the Meridian
-sample (`../sample-test-data/`), which tests the basics. This one tests whether a cycle copes with a messy,
-multi-entity, multi-standard group.
+sample (`sample-data/sample-test-data/`), which tests the basics. This one tests whether a cycle copes with a
+messy, multi-entity, multi-standard group.
 
-| File | What it is |
-|---|---|
-| `Business_Review_Complex_Input_FY2025.xlsx` | The input. Copy it alone into the inputs folder. |
-| `EXPECTED.json` | Reference values a correct cycle should reproduce (goodwill, NCI, JV share, disposal gain, covenant headroom, and more). |
-| `generate_complex_dataset.py` | Rebuilds both files. It is deterministic, so re-running gives identical data. |
+| File | Where | What it is |
+|---|---|---|
+| `Business_Review_Complex_Input_FY2025.xlsx` | `sample-data/complex-test-data/` | The input. Copy it alone into the inputs folder. |
+| `Complex_Test_Answer_Key_FY2025.xlsx` | `sample-data/answer-keys/` | User-facing answer key: what a cycle produces, every planted issue in plain English, expected figures, and a scorecard. |
+| `EXPECTED.json` | here | Reference values a correct cycle should reproduce (goodwill, NCI, JV share, disposal gain, covenant headroom, and more). |
+| `generate_complex_dataset.py` | here | Rebuilds the input workbook and `EXPECTED.json`. It is deterministic, so re-running gives identical data. |
+| `build_answer_key.py` | here | Rebuilds the user-facing answer key from `EXPECTED.json`. Re-run it after regenerating the dataset. |
 
 Every ledger balances by construction, using the same interim trial-balance convention as Meridian. The only
 imbalances are the planted ones (rows 2.2, 2.12 and JV01 below).
@@ -119,7 +126,8 @@ has to be caught by the cycle's own judgment (Phases 2-5). The section numbers r
 
 1. Put `Business_Review_Complex_Input_FY2025.xlsx` (and nothing else) into the resolved inputs folder.
 2. Ask: *"Run a business review cycle on the complex test data."*
-3. Compare the Data Validation Report and the deliverables with this table and `EXPECTED.json`. A good run:
+3. Compare the Data Validation Report and the deliverables with this table and `EXPECTED.json` (or use the
+   Scorecard in `sample-data/answer-keys/Complex_Test_Answer_Key_FY2025.xlsx`). A good run:
    - catches every ⚙ row at the checkpoint
    - raises the hyperinflation index (4.1) as a LOW question
    - reproduces the `EXPECTED.json` values within rounding

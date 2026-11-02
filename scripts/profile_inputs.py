@@ -95,7 +95,7 @@ def profile(inputs_dir):
                 }
                 t["outlier_periods"] = outlier_periods(rows, pcol) if cat in ACTUALS else []
                 if cat == "01_GL_TrialBalance" and colmap.get("Debit") and colmap.get("Credit"):
-                    t["tb_imbalances"] = tb_imbalances(rows, colmap, pcol)
+                    t["tb_imbalances"] = tb_imbalances(rows, colmap, pcol, skip_periods=t["outlier_periods"])
                 if cat == "01_GL_TrialBalance" and colmap.get("Account Type") and colmap.get("Entity Code"):
                     t["pnl_entities"] = sorted({str(r.get(colmap["Entity Code"])) for r in rows
                                                 if is_pnl_type(r.get(colmap["Account Type"]))})
@@ -383,11 +383,18 @@ def config_checks(config_rows):
     return out
 
 
-def tb_imbalances(rows, colmap, pcol):
-    """Debits should equal credits per entity/period in a trial balance. Returns the failing groups."""
+def tb_imbalances(rows, colmap, pcol, skip_periods=()):
+    """Debits should equal credits per entity/period in a trial balance. Returns the failing groups.
+    Tested after the two normalizations that would otherwise fail it falsely: subtotal rows are dropped
+    (playbook 2.2) and forecast-leak periods are skipped (2.12) -- both are reported as their own checks."""
     sums = defaultdict(float)
+    aname, acode = colmap.get("Account Name"), colmap.get("Account Code")
     for r in rows:
+        if (aname and brlib.SUBTOTAL_RE.search(str(r.get(aname) or ""))) or (acode and r.get(acode) in (None, "")):
+            continue
         key = (str(col(r, colmap, "Entity Code")), brlib.to_period(r.get(pcol)) if pcol else None)
+        if key[1] in skip_periods:
+            continue
         sums[key] += num(col(r, colmap, "Debit")) - num(col(r, colmap, "Credit"))
     return [{"entity": e, "period": p, "debit_minus_credit": round(v, 2)}
             for (e, p), v in sorted(sums.items(), key=lambda kv: str(kv[0])) if abs(v) >= 1.0]
@@ -464,6 +471,8 @@ def analyse(prof):
     checks = []
     for t in prof["tables"]:
         for imb in t.get("tb_imbalances", []):
+            if imb["entity"] in one_line:  # P&L-only management accounts never balance (playbook 3.2)
+                continue
             checks.append({"check": "Trial balance debits = credits", "scope": f'{imb["entity"]} {imb["period"]}',
                            "result": "FAIL",
                            "detail": f'Debits - credits = {imb["debit_minus_credit"]:,.2f} (an unclosed-earnings '
@@ -484,7 +493,11 @@ def analyse(prof):
                                "detail": f"{ev}: no value proves DD/MM vs MM/DD" if ev == "AMBIGUOUS"
                                else f"{ev}: column mixes DD/MM and MM/DD values"})
     gl_tables = [t for t in by_cat.get("01_GL_TrialBalance", []) if "tb_imbalances" in t]
-    if gl_tables and not any(t["tb_imbalances"] for t in gl_tables):
+    for e in sorted({i["entity"] for t in gl_tables for i in t["tb_imbalances"]} & one_line):
+        checks.append(chk("Trial balance debits = credits", e, "INFO",
+                          "Equity-method / one-line entity supplied P&L only -- imbalance equals its net income; "
+                          "expected, not an error (playbook 3.2)"))
+    if gl_tables and not any(i["entity"] not in one_line for t in gl_tables for i in t["tb_imbalances"]):
         checks.append({"check": "Trial balance debits = credits", "scope": "all entities/periods",
                        "result": "PASS", "detail": ""})
     # Data-shape and group-structure traps (complex-scenarios-playbook.md, marked ⚙ there).

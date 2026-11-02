@@ -4,6 +4,9 @@ data/outputs/*
 !data/inputs/.gitkeep
 !data/outputs/.gitkeep
 
+# Client data folders (confidential inputs + deliverables) -- never commit
+data/CLNT-*/
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db

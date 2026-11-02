@@ -71,6 +71,14 @@ data but no matching budget data). The pipeline then stops and waits for confirm
 before building the workbook, memo, and deck — this checkpoint is unconditional and applies even when
 every other judgment call this cycle was HIGH confidence.
 
+**Every cycle ends with a Reconciliation & Sign-off file.** Real client data has no answer key, so Phase 9
+writes `<Period>_Reconciliation_and_Signoff.xlsx` (via `scripts/build_signoff.py`): control totals for the
+client to compare with their own accounting system, bank and payroll, the cycle's built-in check results,
+every MEDIUM/LOW judgment call for them to agree or correct, open items, and a sign-off block. It doesn't
+block delivery. When the client returns it, run `build_signoff.py --check`, act on every CHECK figure and
+correction, and rebuild. At the start of the next cycle, check the previous period's file and carry its
+unresolved items forward.
+
 ## Conventions
 
 - Never invent figures to fill a gap; follow the skill's autonomy doctrine (HIGH/MEDIUM/LOW confidence

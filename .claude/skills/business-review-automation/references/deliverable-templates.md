@@ -107,3 +107,35 @@ Keep the main body within the cadence's slide count: move detail to the appendix
 body slides.
 
 Design standard for every deck regardless of cadence: native charts (not screenshots), one clear "so what" per chart, no filler slides, and the same visual QA pass every cycle.
+
+## Reconciliation & Sign-off (.xlsx) - Phase 9, every cycle
+
+Built by `scripts/build_signoff.py` from `<outputs>/_work/<Period>/signoff_inputs.json`. The script owns the
+layout (tabs: Start Here, 1 Control Totals, 2 Built-in Checks, 3 Judgment Calls, 4 Open Items, 5 Sign-off;
+yellow cells for the client, PASS/CHECK formulas, dropdowns). The cycle only supplies the content below.
+
+**Spec keys:** `period`, `period_text`, `currency`, `basis`, `company`, `workbook`, then four lists:
+
+| List | Each entry | Notes |
+|---|---|---|
+| `figures` | `section`, `entity`, `figure`, `unit`, `value`, `source` (model sheet!cell), `where_to_find`, `tolerance`, optional `client_value` | `value` is read from the finished model, never retyped. |
+| `checks` | `check`, `result` (PASS / WARN / FAIL), `detail` | Structural tie-outs plus the Phase 8 script results. |
+| `judgments` | `ref`, `tier`, `item`, `treatment`, `impact` | Every MEDIUM and LOW call. Omit the key to read them from the model's Assumptions & Judgment Log tab. |
+| `open_items` | `item`, `why_open`, `needed` | LOW items carried open, data gaps, and unresolved items from the prior period's sign-off. |
+
+**Minimum control figures.** Choose figures the client can read directly off a system they already trust,
+not figures only the review can produce:
+
+1. **Per entity, in its own currency** (from that entity's accounting system): revenue, net income, closing
+   cash, total assets, and period-end headcount (from HR/payroll) where headcount was supplied. Use tolerance
+   `"1"`: these should match the source exactly, so any difference points to an incomplete export or a parsing
+   error (YTD, unit scale, sign convention).
+2. **Group, in the reporting currency:** revenue, net income (attributable to the parent when NCI exists),
+   closing cash, and total equity. Use tolerance `"0.5%"`, because the client's own consolidation may use
+   slightly different rates. Set `where_to_find` to "Your consolidated management accounts, if prepared".
+3. **Each tested covenant ratio** (tolerance `"0.01"`), against the compliance certificate sent to the
+   lender. Where the review's recomputed figure differs from the company's reported figure by definition,
+   say so in `where_to_find`.
+4. **Anything the client handed over as a control total** in conversation, with `client_value` filled in.
+
+Keep it to roughly 5 per entity plus 5 for the group. The aim is a 15-30 minute review, not a second audit.

@@ -5,7 +5,10 @@ Builds Business_Review_Complex_Input_FY2025.xlsx: a synthetic FY2025 group (Halc
 .claude/skills/business-review-automation/references/complex-scenarios-playbook.md, and EXPECTED.json with the
 reference values a correct review cycle should reproduce. README.md in this folder is the answer key.
 
-  python sample-data/complex-test-data/generate_complex_dataset.py
+  python developer/complex-test-data/generate_complex_dataset.py
+
+The input workbook is written to sample-data/complex-test-data/ (the only file a user handles); EXPECTED.json
+stays here with the developer files. Run build_answer_key.py afterwards to refresh the user-facing answer key.
 
 Deterministic (fixed seed): re-running produces identical data. Every entity's ledger balances by construction
 (interim trial-balance convention, as in the Meridian sample: retained earnings carried at the period-opening
@@ -21,7 +24,8 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT_XLSX = os.path.join(HERE, "Business_Review_Complex_Input_FY2025.xlsx")
+REPO = os.path.dirname(os.path.dirname(HERE))
+OUT_XLSX = os.path.join(REPO, "sample-data", "complex-test-data", "Business_Review_Complex_Input_FY2025.xlsx")
 OUT_JSON = os.path.join(HERE, "EXPECTED.json")
 random.seed(20251231)
 
